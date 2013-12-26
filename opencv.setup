@@ -1,0 +1,18 @@
+(use srfi-1)
+(use srfi-13)
+(use posix)
+(let ((cflags (with-input-from-pipe "pkg-config --cflags opencv" read-line))
+      (lflags (string-append (string-append "-L '" (with-input-from-pipe "pkg-config --libs opencv" read-line) "'"))))
+
+(compile -O2 -d0 -s -j opencv "opencv" ,cflags ,lflags)
+(compile -O2 -d0 -s opencv.import.scm)
+(compile -O2 -d0 -s -j opencv-highgui "opencv-highgui" ,cflags ,lflags)
+(compile -O2 -d0 -s opencv-highgui.import.scm)
+)
+
+(install-extension
+  'opencv
+  '("opencv.so" "opencv.import.so" "opencv-highgui.so" "opencv-highgui.import.so")
+  '((version "1.0.0")))
+
+;; vim: set ft=scheme:
