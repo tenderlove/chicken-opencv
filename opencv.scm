@@ -7,6 +7,7 @@
    make-mat-from-buffer
    u8mat-ref
    u8mat-set!
+   unwrap-CvMat
    CV_8U
    CV_8S
    CV_16U

@@ -1,13 +1,14 @@
 (module opencv-highgui
   (make-window
    load-image
+   decode-image
    wait-key
    show-image
    destroy-window-named
    destroy-all-windows)
 
-(import scheme chicken foreign)
-(use lolevel)
+(import scheme chicken foreign opencv)
+(use lolevel opencv)
 
 (define-record-type IplImage
   (wrap-IplImage pointer)
@@ -38,9 +39,13 @@
 (define (wait-key timeout) (cvWaitKey timeout))
 
 (define (show-image window image)
-  (if (window? window)
-      (cvShowImage (unwrap-named-window window) (unwrap-IplImage image))
-      (cvShowImage window (unwrap-IplImage image))))
+  (let ((win (if (window? window)
+                 (unwrap-named-window window)
+                 window))
+        (img (if (IplImage? image)
+                 (unwrap-IplImage image)
+                 (unwrap-CvMat image))))
+    (cvShowImage win img)))
 
 (define (make-window name)
   (cvNamedWindow name CV_WINDOW_AUTOSIZE)
@@ -82,5 +87,16 @@
                                     "cvShowImage"
                                     nonnull-c-string
                                     CvArr*))
+
+(define-foreign-type CvMat* (c-pointer "CvMat"))
+
+(define (decode-image bytes)
+  (wrap-IplImage
+    (cvDecodeImage (unwrap-CvMat bytes) CV_LOAD_IMAGE_COLOR)))
+
+(define cvDecodeImage (foreign-lambda IplImage*
+                                    "cvDecodeImage"
+                                    CvMat*
+                                    int))
 
 )
