@@ -91,8 +91,9 @@
 (define-foreign-type CvMat* (c-pointer "CvMat"))
 
 (define (decode-image bytes)
-  (wrap-IplImage
-    (cvDecodeImage (unwrap-CvMat bytes) CV_LOAD_IMAGE_COLOR)))
+  (let ((ptr (cvDecodeImage (unwrap-CvMat bytes) CV_LOAD_IMAGE_COLOR)))
+    (set-finalizer! ptr release-image)
+    (wrap-IplImage ptr)))
 
 (define cvDecodeImage (foreign-lambda IplImage*
                                     "cvDecodeImage"
