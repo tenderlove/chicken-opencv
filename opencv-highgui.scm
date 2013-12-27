@@ -79,7 +79,7 @@
                                     "cvReleaseImage"
                                     (c-pointer IplImage*)))
 
-(define cvWaitKey (foreign-lambda void
+(define cvWaitKey (foreign-lambda int
                                   "cvWaitKey"
                                   int))
 

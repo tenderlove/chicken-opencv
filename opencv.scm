@@ -92,7 +92,6 @@
 (define CV_64FC3 (foreign-value "CV_64FC3" int))
 (define CV_64FC4 (foreign-value "CV_64FC4" int))
 
-(define-foreign-type CvMat "CvMat")
 (define-foreign-type CvMat* (c-pointer "CvMat"))
 
 (define (make-mat rows cols type)
