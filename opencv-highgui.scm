@@ -1,6 +1,8 @@
 (module opencv-highgui
   (make-window
    load-image
+   wait-key
+   show-image
    destroy-window-named
    destroy-all-windows)
 
@@ -12,6 +14,11 @@
   IplImage?
   (pointer unwrap-IplImage))
 
+(define-record-type namedWindow
+  (wrap-named-window name)
+  window?
+  (name unwrap-named-window))
+
 (foreign-declare "#include <opencv/highgui.h>")
 
 (define CV_WINDOW_AUTOSIZE (foreign-value "CV_WINDOW_AUTOSIZE" int))
@@ -21,14 +28,23 @@
 
 (define-foreign-type IplImage "IplImage")
 (define-foreign-type IplImage* (c-pointer "IplImage"))
+(define-foreign-type CvArr* (c-pointer "CvArr"))
 
 (define (load-image file)
   (let ((ptr (cvLoadImage file CV_LOAD_IMAGE_COLOR)))
     (set-finalizer! ptr release-image)
     (wrap-IplImage ptr)))
 
+(define (wait-key timeout) (cvWaitKey timeout))
+
+(define (show-image window image)
+  (if (window? window)
+      (cvShowImage (unwrap-named-window window) (unwrap-IplImage image))
+      (cvShowImage window (unwrap-IplImage image))))
+
 (define (make-window name)
-  (cvNamedWindow name CV_WINDOW_AUTOSIZE))
+  (cvNamedWindow name CV_WINDOW_AUTOSIZE)
+  (wrap-named-window name))
 
 (define (destroy-window-named name) (cvDestroyWindow name))
 (define (destroy-all-windows) (cvDestroyAllWindows))
@@ -57,4 +73,14 @@
 (define cvReleaseImage (foreign-lambda void
                                     "cvReleaseImage"
                                     (c-pointer IplImage*)))
+
+(define cvWaitKey (foreign-lambda void
+                                  "cvWaitKey"
+                                  int))
+
+(define cvShowImage (foreign-lambda void
+                                    "cvShowImage"
+                                    nonnull-c-string
+                                    CvArr*))
+
 )
