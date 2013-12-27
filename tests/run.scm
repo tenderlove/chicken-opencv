@@ -1,4 +1,4 @@
-(use opencv opencv-highgui test srfi-1 posix)
+(use opencv test srfi-1 posix opencv)
 
 (test-begin "opencv-highgui")
 
@@ -21,7 +21,8 @@
   (let ((mat (make-mat-from-buffer "foo")))
     (test #\f (integer->char (u8mat-ref mat 0 0)))
     (test #\o (integer->char (u8mat-ref mat 0 1)))
-    (test #\o (integer->char (u8mat-ref mat 0 2)))))
+    (test #\o (integer->char (u8mat-ref mat 0 2)))
+    (test '(3 1) (get-size mat))))
 
 (test-end)
 (test-exit)

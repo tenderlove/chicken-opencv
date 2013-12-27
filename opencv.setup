@@ -6,13 +6,11 @@
 
 (compile -O2 -d0 -s -j opencv "opencv" ,cflags ,lflags)
 (compile -O2 -d0 -s opencv.import.scm)
-(compile -O2 -d0 -s -j opencv-highgui "opencv-highgui" ,cflags ,lflags)
-(compile -O2 -d0 -s opencv-highgui.import.scm)
 )
 
 (install-extension
   'opencv
-  '("opencv.so" "opencv.import.so" "opencv-highgui.so" "opencv-highgui.import.so")
+  '("opencv.so" "opencv.import.so")
   '((version "1.0.0")))
 
 ;; vim: set ft=scheme:
