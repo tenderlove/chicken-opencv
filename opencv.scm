@@ -4,6 +4,9 @@
 (module opencv
   (
    make-mat
+   make-mat-from-buffer
+   u8mat-ref
+   u8mat-set!
    CV_8U
    CV_8S
    CV_16U
@@ -42,7 +45,7 @@
   )
 
 (import scheme chicken foreign)
-(use lolevel)
+(use lolevel srfi-4 ports)
 
 (define-record-type CvMat
   (wrap-CvMat pointer)
@@ -92,9 +95,28 @@
 (define-foreign-type CvMat* (c-pointer "CvMat"))
 
 (define (make-mat rows cols type)
-  (let ((ptr (cvCreateMatHeader rows cols type)))
+  (let ((ptr (cvCreateMat rows cols type)))
     (set-finalizer! ptr release-mat)
     (wrap-CvMat ptr)))
+
+(define (make-8UC1mat rows cols)
+  (make-mat rows cols CV_8UC1))
+
+(define (u8vector-each-with-index cb vec)
+  (let ((len (u8vector-length vec)))
+    (let loop ((i 0))
+      (if (< i len)
+          (begin
+            (cb (u8vector-ref vec i) i)
+            (loop (+ 1 i)))))))
+
+(define (make-mat-from-buffer buf)
+  (let* ((len (string-length buf))
+         (mat (make-8UC1mat 1 len))
+         (bytes (with-input-from-string buf (lambda () (read-u8vector len)))))
+    (u8vector-each-with-index (lambda (char col)
+                                (u8mat-set! mat 0 col char)) bytes)
+    mat))
 
 (define (release-mat ptr)
   (let-location ((i CvMat* ptr))
@@ -104,9 +126,28 @@
                                     "cvReleaseMat"
                                     (c-pointer CvMat*)))
 
-(define cvCreateMatHeader (foreign-lambda CvMat*
-                                    "cvCreateMatHeader"
+(define cvCreateMat (foreign-lambda CvMat*
+                                    "cvCreateMat"
                                     int
                                     int
                                     int))
+
+(define (u8mat-set! mat row col val)
+  (u8mat-set (unwrap-CvMat mat) row col val))
+
+(define u8mat-set (foreign-lambda* void
+                                   ((CvMat* mat)
+                                    (int row)
+                                    (int col)
+                                    (unsigned-byte val))
+"CV_MAT_ELEM(*mat, char, row, col) = (char)val;"))
+
+(define (u8mat-ref mat row col)
+  (u8mat-get (unwrap-CvMat mat) row col))
+
+(define u8mat-get (foreign-lambda* unsigned-byte
+                                    ((CvMat* mat)
+                                     (int row)
+                                     (int col))
+"C_return(CV_MAT_ELEM(*mat, char, row, col));"))
 )

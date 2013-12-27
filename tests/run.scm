@@ -13,7 +13,11 @@
     (test-assert (show-image "tenderlove" (load-image "cremate.jpg")))))
 
 (test-group "matrix"
-  (test-assert (make-mat 10 10 CV_8UC1)))
+  (test-assert (make-mat 10 10 CV_8UC1))
+  (let ((mat (make-mat-from-buffer "foo")))
+    (test #\f (integer->char (u8mat-ref mat 0 0)))
+    (test #\o (integer->char (u8mat-ref mat 0 1)))
+    (test #\o (integer->char (u8mat-ref mat 0 2)))))
 
 (test-end)
 (test-exit)
