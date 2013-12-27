@@ -150,4 +150,9 @@
                                      (int row)
                                      (int col))
 "C_return(CV_MAT_ELEM(*mat, char, row, col));"))
+
+;(define cvGetSize (foreign-lambda c-pointer
+;                                  "cvGetSize"
+;                                  c-pointer))
+
 )

@@ -10,7 +10,9 @@
     (test-assert (show-image window (load-image "cremate.jpg"))))
 
   (let ((window (make-window "tenderlove")))
-    (test-assert (show-image "tenderlove" (load-image "cremate.jpg")))))
+    (test-assert (show-image "tenderlove" (load-image "cremate.jpg"))))
+  (let ((mat (make-mat-from-buffer (read-all "cremate.jpg"))))
+    (test-assert (decode-image mat))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))
