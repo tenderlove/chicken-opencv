@@ -48,7 +48,7 @@
     (cvShowImage win img)))
 
 (define (make-window name)
-  (cvNamedWindow name CV_WINDOW_AUTOSIZE)
+  (cvNamedWindow name CV_WINDOW_NORMAL)
   (wrap-named-window name))
 
 (define (destroy-window-named name) (cvDestroyWindow name))
