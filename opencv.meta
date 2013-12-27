@@ -8,7 +8,6 @@
  (doc-from-wiki)
  (test-depends test)
  (files "opencv.scm"
-        "opencv-highgui.scm"
         "opencv.meta"
         "opencv.setup"
         "tests/run.scm"))

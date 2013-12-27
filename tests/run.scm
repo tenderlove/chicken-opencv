@@ -4,4 +4,4 @@
 
 (test-group "windows"
   (test-assert (make-window "foo"))
-  (test-assert (destroy-window-named "foo")))
+  (test-assert (load-image "cremate.jpg")))
