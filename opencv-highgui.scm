@@ -1,5 +1,6 @@
 (module opencv-highgui
   (make-window
+   load-image
    destroy-window-named
    destroy-all-windows)
 
