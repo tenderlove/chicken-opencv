@@ -19,8 +19,13 @@
 (define CV_WINDOW_OPENGL (foreign-value "CV_WINDOW_OPENGL" int))
 (define CV_LOAD_IMAGE_COLOR (foreign-value "CV_LOAD_IMAGE_COLOR" int))
 
+(define-foreign-type IplImage "IplImage")
+(define-foreign-type IplImage* (c-pointer "IplImage"))
+
 (define (load-image file)
-  (wrap-IplImage (cvLoadImage file CV_LOAD_IMAGE_COLOR)))
+  (let ((ptr (cvLoadImage file CV_LOAD_IMAGE_COLOR)))
+    (set-finalizer! ptr release-image)
+    (wrap-IplImage ptr)))
 
 (define (make-window name)
   (cvNamedWindow name CV_WINDOW_AUTOSIZE))
@@ -40,8 +45,16 @@
 (define cvDestroyAllWindows (foreign-lambda void
                                       "cvDestroyAllWindows"))
 
-(define cvLoadImage (foreign-lambda c-pointer
+(define cvLoadImage (foreign-lambda IplImage*
                                     "cvLoadImage"
                                     nonnull-c-string
                                     int))
+
+(define (release-image ptr)
+  (let-location ((i IplImage* ptr))
+                (cvReleaseImage (location i))))
+
+(define cvReleaseImage (foreign-lambda void
+                                    "cvReleaseImage"
+                                    (c-pointer IplImage*)))
 )
