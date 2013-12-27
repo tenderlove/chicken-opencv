@@ -14,7 +14,9 @@
   (let ((mat (make-mat-from-buffer (read-all "cremate.jpg"))))
     (test-assert (decode-image mat)))
   (let ((bytes (read-all "cremate.jpg")))
-    (test-assert (decode-image bytes))))
+    (test-assert (decode-image bytes)))
+  (let ((img (decode-image (read-all "cremate.jpg"))))
+    (test '(223 310) (get-size img))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))

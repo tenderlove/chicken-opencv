@@ -168,16 +168,19 @@
         (ptr (if (CvMat? thing)
                  (unwrap-CvMat thing)
                  (unwrap-IplImage thing))))
-    (cvGetSize ptr vec)
-    (u32vector->list vec)))
+    (let-location ((width integer 0)
+                   (height integer 0))
+                  (cvGetSize ptr (location width) (location height))
+                  (list width height))))
 
 (define cvGetSize (foreign-lambda* void
                                    ((CvArr* ptr)
-                                    (u32vector ret))
+                                    (c-pointer width)
+                                    (c-pointer height))
 "
 CvSize s = cvGetSize((CvArr*)ptr);
-*ret = s.width;
-*(ret + 1) = s.height;"))
+*((int *)width) = s.width;
+*((int *)height) = s.height;"))
 
 ;;; highgui
 
@@ -190,8 +193,6 @@ CvSize s = cvGetSize((CvArr*)ptr);
   (wrap-named-window name)
   window?
   (name unwrap-named-window))
-
-(foreign-declare "#include <opencv/highgui.h>")
 
 (define CV_WINDOW_AUTOSIZE (foreign-value "CV_WINDOW_AUTOSIZE" int))
 (define CV_WINDOW_NORMAL (foreign-value "CV_WINDOW_NORMAL" int))
