@@ -16,7 +16,7 @@
   (let ((bytes (read-all "cremate.jpg")))
     (test-assert (decode-image bytes)))
   (let ((img (decode-image (read-all "cremate.jpg"))))
-    (test (BGR2GRAY img))
+    (test-assert (BGR2GRAY img))
     (test '(223 310) (get-size img))))
 
 (test-group "matrix"
