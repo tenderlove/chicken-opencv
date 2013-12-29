@@ -8,6 +8,7 @@
    u8mat-ref
    u8mat-set!
    get-size
+   BGR2GRAY
    CV_8U
    CV_8S
    CV_16U
@@ -103,8 +104,11 @@
 (define CV_64FC3 (foreign-value "CV_64FC3" int))
 (define CV_64FC4 (foreign-value "CV_64FC4" int))
 
-(define-foreign-type CvMat* (c-pointer "CvMat"))
+(define CV_BGR2GRAY (foreign-value "CV_BGR2GRAY" int))
+
 (define-foreign-type CvArr* (c-pointer "CvArr"))
+(define-foreign-type CvMat* (c-pointer "CvMat"))
+(define-foreign-type IplImage* (c-pointer "IplImage"))
 
 (define (make-mat rows cols type)
   (let ((ptr (cvCreateMat rows cols type)))
@@ -182,6 +186,29 @@ CvSize s = cvGetSize((CvArr*)ptr);
 *((int *)width) = s.width;
 *((int *)height) = s.height;"))
 
+(define (BGR2GRAY img)
+  (let* ((src-ptr (unwrap-IplImage img))
+         (size (get-size img)))
+    (let ((width (car size))
+          (height (cadr size)))
+      (let ((dest-ptr (cvCreateImage width height 8 1)))
+        (cvCvtColor src-ptr dest-ptr CV_BGR2GRAY)
+        (set-finalizer! dest-ptr release-image)
+        (wrap-IplImage dest-ptr)))))
+
+(define cvCvtColor (foreign-lambda void
+                                  "cvCvtColor"
+                                  CvArr*
+                                  CvArr*
+                                  int))
+
+(define cvCreateImage (foreign-lambda* IplImage*
+                                      ((int width)
+                                       (int height)
+                                       (int depth)
+                                       (int channels))
+"C_return(cvCreateImage(cvSize(width, height), depth, channels));"))
+
 ;;; highgui
 
 (define-record-type IplImage
@@ -198,10 +225,6 @@ CvSize s = cvGetSize((CvArr*)ptr);
 (define CV_WINDOW_NORMAL (foreign-value "CV_WINDOW_NORMAL" int))
 (define CV_WINDOW_OPENGL (foreign-value "CV_WINDOW_OPENGL" int))
 (define CV_LOAD_IMAGE_COLOR (foreign-value "CV_LOAD_IMAGE_COLOR" int))
-
-(define-foreign-type IplImage "IplImage")
-(define-foreign-type IplImage* (c-pointer "IplImage"))
-(define-foreign-type CvArr* (c-pointer "CvArr"))
 
 (define (load-image file)
   (let ((ptr (cvLoadImage file CV_LOAD_IMAGE_COLOR)))
@@ -259,8 +282,6 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                     "cvShowImage"
                                     nonnull-c-string
                                     CvArr*))
-
-(define-foreign-type CvMat* (c-pointer "CvMat"))
 
 (define (decode-image bytes)
   (let ((mat (if (string? bytes)
