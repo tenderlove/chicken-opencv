@@ -9,6 +9,7 @@
    u8mat-set!
    get-size
    BGR2GRAY
+   canny
    CV_8U
    CV_8S
    CV_16U
@@ -153,6 +154,32 @@
                    (height integer 0))
                   (cvGetSize ptr (location width) (location height))
                   (list width height))))
+
+(define (canny image threshold1 threshold2 apeture-size)
+  (let* ((ptr (unwrap-IplImage image))
+         (size (get-size image))
+         (depth (img->depth ptr))
+         (channels (img->nChannels ptr))
+         (dest-img (cvCreateImage (car size) (cadr size) depth channels)))
+    (cvCanny ptr dest-img threshold1 threshold2 apeture-size)
+    (set-finalizer! dest-img release-image)
+    (wrap-IplImage dest-img)))
+
+(define cvCanny (foreign-lambda void
+                                "cvCanny"
+                                CvMat*
+                                CvMat*
+                                double
+                                double
+                                int))
+
+(define img->depth (foreign-lambda* int
+                                    ((IplImage* ptr))
+                                    "C_return(ptr->depth);"))
+
+(define img->nChannels (foreign-lambda* int
+                                    ((IplImage* ptr))
+                                    "C_return(ptr->nChannels);"))
 
 (define (release-mat ptr)
   (let-location ((i CvMat* ptr))
