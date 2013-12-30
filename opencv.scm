@@ -134,6 +134,26 @@
                                 (u8mat-set! mat 0 col char)) bytes)
     mat))
 
+(define (BGR2GRAY img)
+  (let* ((src-ptr (unwrap-IplImage img))
+         (size (get-size img)))
+    (let ((width (car size))
+          (height (cadr size)))
+      (let ((dest-ptr (cvCreateImage width height 8 1)))
+        (cvCvtColor src-ptr dest-ptr CV_BGR2GRAY)
+        (set-finalizer! dest-ptr release-image)
+        (wrap-IplImage dest-ptr)))))
+
+(define (get-size thing)
+  (let ((vec (make-u32vector 2))
+        (ptr (if (CvMat? thing)
+                 (unwrap-CvMat thing)
+                 (unwrap-IplImage thing))))
+    (let-location ((width integer 0)
+                   (height integer 0))
+                  (cvGetSize ptr (location width) (location height))
+                  (list width height))))
+
 (define (release-mat ptr)
   (let-location ((i CvMat* ptr))
                 (cvReleaseMat (location i))))
@@ -167,16 +187,6 @@
                                      (int col))
 "C_return(CV_MAT_ELEM(*mat, char, row, col));"))
 
-(define (get-size thing)
-  (let ((vec (make-u32vector 2))
-        (ptr (if (CvMat? thing)
-                 (unwrap-CvMat thing)
-                 (unwrap-IplImage thing))))
-    (let-location ((width integer 0)
-                   (height integer 0))
-                  (cvGetSize ptr (location width) (location height))
-                  (list width height))))
-
 (define cvGetSize (foreign-lambda* void
                                    ((CvArr* ptr)
                                     (c-pointer width)
@@ -185,16 +195,6 @@
 CvSize s = cvGetSize((CvArr*)ptr);
 *((int *)width) = s.width;
 *((int *)height) = s.height;"))
-
-(define (BGR2GRAY img)
-  (let* ((src-ptr (unwrap-IplImage img))
-         (size (get-size img)))
-    (let ((width (car size))
-          (height (cadr size)))
-      (let ((dest-ptr (cvCreateImage width height 8 1)))
-        (cvCvtColor src-ptr dest-ptr CV_BGR2GRAY)
-        (set-finalizer! dest-ptr release-image)
-        (wrap-IplImage dest-ptr)))))
 
 (define cvCvtColor (foreign-lambda void
                                   "cvCvtColor"
