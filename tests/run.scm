@@ -25,12 +25,21 @@
 
 (test-group "contours"
   (test-assert CV_RETR_LIST)
+  (test-assert CV_RETR_TREE)
+  (test-assert CV_RETR_EXTERNAL)
+  (test-assert CV_RETR_CCOMP)
+
   (test-assert CV_CHAIN_APPROX_SIMPLE)
+  (test-assert CV_CHAIN_APPROX_NONE)
+  (test-assert CV_CHAIN_APPROX_TC89_L1)
+  (test-assert CV_CHAIN_APPROX_TC89_KCOS)
+
   (let* ((img (load-image "cremate.jpg"))
          (gray (BGR2GRAY img))
          (mode CV_RETR_LIST)
          (method CV_CHAIN_APPROX_SIMPLE))
-    (test-assert (find-contours gray mode method))))
+    (test-assert (find-contours gray mode method))
+    (test #f (hole? (find-contours gray mode method)))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))

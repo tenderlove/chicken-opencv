@@ -48,7 +48,17 @@
    CV_64FC4
 
    CV_RETR_LIST
+   CV_RETR_EXTERNAL
+   CV_RETR_CCOMP
+   CV_RETR_TREE
+
    CV_CHAIN_APPROX_SIMPLE
+   CV_CHAIN_APPROX_NONE
+   CV_CHAIN_APPROX_TC89_L1
+   CV_CHAIN_APPROX_TC89_KCOS
+
+   find-contours
+   hole?
 
    ;; highgui
    make-window
@@ -73,6 +83,12 @@
   (wrap-CvMemStorage pointer)
   CvMemStorage?
   (pointer unwrap-CvMemStorage))
+
+(define-record-type CvSeq
+  (wrap-CvSeq pointer storage)
+  CvSeq?
+  (pointer unwrap-CvSeq)
+  (storage unwrap-CvSeq-storage))
 
 (foreign-declare "#include <opencv/cv.h>")
 (foreign-declare "#include <opencv/highgui.h>")
@@ -117,10 +133,18 @@
 (define CV_BGR2GRAY (foreign-value "CV_BGR2GRAY" int))
 
 (define CV_RETR_LIST (foreign-value "CV_RETR_LIST" int))
+(define CV_RETR_EXTERNAL (foreign-value "CV_RETR_EXTERNAL" int))
+(define CV_RETR_CCOMP (foreign-value "CV_RETR_CCOMP" int))
+(define CV_RETR_TREE (foreign-value "CV_RETR_TREE" int))
+
 (define CV_CHAIN_APPROX_SIMPLE (foreign-value "CV_CHAIN_APPROX_SIMPLE" int))
+(define CV_CHAIN_APPROX_NONE (foreign-value "CV_CHAIN_APPROX_NONE" int))
+(define CV_CHAIN_APPROX_TC89_L1 (foreign-value "CV_CHAIN_APPROX_TC89_L1" int))
+(define CV_CHAIN_APPROX_TC89_KCOS (foreign-value "CV_CHAIN_APPROX_TC89_KCOS" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
+(define-foreign-type CvSeq* (c-pointer "CvSeq"))
 (define-foreign-type IplImage* (c-pointer "IplImage"))
 (define-foreign-type CvMemStorage* (c-pointer "CvMemStorage"))
 
@@ -254,6 +278,44 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                   CvArr*
                                   CvArr*
                                   int))
+
+; cvFindContours(CvArr* image, CvMemStorage* storage, CvSeq** first_contour, int header_size=sizeof(CvContour), int mode=CV_RETR_LIST, int method=CV_CHAIN_APPROX_SIMPLE, CvPoint offset=cvPoint(0,0) )
+
+(define (find-contours image mode method)
+  (let* ((ptr (unwrap-IplImage image))
+         (storage (make-mem-storage 0))
+         (storage-ptr (unwrap-CvMemStorage storage))
+         (header-size (foreign-type-size "CvContour")))
+    (let-location ((first-contour CvSeq*))
+                  (cvFindContours ptr
+                                  storage-ptr
+                                  (location first-contour)
+                                  header-size
+                                  mode
+                                  method
+                                  0
+                                  0)
+                  (wrap-CvSeq first-contour storage))))
+
+(define (hole? seq)
+  (if (= 0 (CV_IS_SEQ_HOLE (unwrap-CvSeq seq))) #f #t))
+
+(define CV_IS_SEQ_HOLE (foreign-lambda int
+                                       "CV_IS_SEQ_HOLE"
+                                       CvSeq*))
+
+(define cvFindContours (foreign-lambda* int
+                                        ((CvArr* img)
+                                         (CvMemStorage* storage)
+                                         ((c-pointer CvSeq*) first_contour)
+                                         (int header_size)
+                                         (int mode)
+                                         (int method)
+                                         (int x)
+                                         (int y))
+"
+C_return(cvFindContours(img, storage, first_contour, header_size, mode, method,
+                             cvPoint(x, y)));"))
 
 (define cvCreateImage (foreign-lambda* IplImage*
                                       ((int width)
