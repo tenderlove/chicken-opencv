@@ -20,6 +20,9 @@
     (test-assert (canny (BGR2GRAY img) 100 100 3))
     (test '(223 310) (get-size img))))
 
+(test-group "storage"
+  (test-assert (make-mem-storage 0)))
+
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))
   (let ((mat (make-mat-from-buffer "foo")))

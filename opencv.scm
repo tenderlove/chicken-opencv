@@ -10,6 +10,7 @@
    get-size
    BGR2GRAY
    canny
+   make-mem-storage
    CV_8U
    CV_8S
    CV_16U
@@ -65,6 +66,11 @@
   CvMat?
   (pointer unwrap-CvMat))
 
+(define-record-type CvMemStorage
+  (wrap-CvMemStorage pointer)
+  CvMemStorage?
+  (pointer unwrap-CvMemStorage))
+
 (foreign-declare "#include <opencv/cv.h>")
 (foreign-declare "#include <opencv/highgui.h>")
 
@@ -110,6 +116,7 @@
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
 (define-foreign-type IplImage* (c-pointer "IplImage"))
+(define-foreign-type CvMemStorage* (c-pointer "CvMemStorage"))
 
 (define (make-mat rows cols type)
   (let ((ptr (cvCreateMat rows cols type)))
@@ -118,6 +125,11 @@
 
 (define (make-8UC1mat rows cols)
   (make-mat rows cols CV_8UC1))
+
+(define (make-mem-storage size)
+  (let ((ptr (cvCreateMemStorage size)))
+    (set-finalizer! ptr release-mem-storage)
+    (wrap-CvMemStorage ptr)))
 
 (define (u8vector-each-with-index cb vec)
   (let ((len (u8vector-length vec)))
@@ -181,6 +193,14 @@
                                     ((IplImage* ptr))
                                     "C_return(ptr->nChannels);"))
 
+(define (release-mem-storage ptr)
+  (let-location ((i CvMemStorage* ptr))
+                (cvReleaseMemStorage (location i))))
+
+(define cvReleaseMemStorage (foreign-lambda void
+                                    "cvReleaseMemStorage"
+                                    (c-pointer CvMemStorage*)))
+
 (define (release-mat ptr)
   (let-location ((i CvMat* ptr))
                 (cvReleaseMat (location i))))
@@ -235,6 +255,10 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                        (int depth)
                                        (int channels))
 "C_return(cvCreateImage(cvSize(width, height), depth, channels));"))
+
+(define cvCreateMemStorage (foreign-lambda CvMemStorage*
+                                           "cvCreateMemStorage"
+                                           int))
 
 ;;; highgui
 
