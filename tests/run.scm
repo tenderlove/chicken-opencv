@@ -23,6 +23,13 @@
 (test-group "storage"
   (test-assert (make-mem-storage 0)))
 
+(define (c->list contour)
+  (let loop ((c contour)
+             (seed '()))
+    (if c
+      (loop (seq->h_next c) (cons c seed))
+      seed)))
+
 (test-group "contours"
   (test-assert CV_RETR_LIST)
   (test-assert CV_RETR_TREE)
@@ -36,10 +43,17 @@
 
   (let* ((img (load-image "cremate.jpg"))
          (gray (BGR2GRAY img))
-         (mode CV_RETR_LIST)
+         (mode CV_RETR_TREE)
          (method CV_CHAIN_APPROX_SIMPLE))
     (test-assert (find-contours gray mode method))
-    (test #f (hole? (find-contours gray mode method)))))
+    (test #f (hole? (find-contours gray mode method))))
+
+  (let* ((img (load-image "cremate.jpg"))
+         (gray (BGR2GRAY img))
+         (can (canny gray 100 100 3))
+         (contours (find-contours can CV_RETR_TREE CV_CHAIN_APPROX_SIMPLE)))
+    (test 354 (length (c->list contours)))
+    (test 354 (length (seq.h_next->list contours)))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))

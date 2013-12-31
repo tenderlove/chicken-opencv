@@ -59,6 +59,8 @@
 
    find-contours
    hole?
+   seq->h_next
+   seq.h_next->list
 
    ;; highgui
    make-window
@@ -299,6 +301,24 @@ CvSize s = cvGetSize((CvArr*)ptr);
 
 (define (hole? seq)
   (if (= 0 (CV_IS_SEQ_HOLE (unwrap-CvSeq seq))) #f #t))
+
+(define (seq->h_next seq)
+  (let ((ptr (unwrap-CvSeq seq))
+        (storage (unwrap-CvSeq-storage seq)))
+    (let ((next-ptr (_seq->h_next ptr)))
+      (if next-ptr
+          (wrap-CvSeq (_seq->h_next ptr) storage)
+          #f))))
+
+(define (seq.h_next->list seq)
+  (let loop ((s seq))
+    (if s
+        (cons s (loop (seq->h_next s)))
+        '())))
+
+(define _seq->h_next (foreign-lambda* CvSeq*
+                                    ((CvSeq* ptr))
+                                    "C_return(ptr->h_next);"))
 
 (define CV_IS_SEQ_HOLE (foreign-lambda int
                                        "CV_IS_SEQ_HOLE"
