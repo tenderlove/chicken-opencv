@@ -47,6 +47,9 @@
    CV_64FC3
    CV_64FC4
 
+   CV_RETR_LIST
+   CV_CHAIN_APPROX_SIMPLE
+
    ;; highgui
    make-window
    load-image
@@ -112,6 +115,9 @@
 (define CV_64FC4 (foreign-value "CV_64FC4" int))
 
 (define CV_BGR2GRAY (foreign-value "CV_BGR2GRAY" int))
+
+(define CV_RETR_LIST (foreign-value "CV_RETR_LIST" int))
+(define CV_CHAIN_APPROX_SIMPLE (foreign-value "CV_CHAIN_APPROX_SIMPLE" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))

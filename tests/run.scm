@@ -23,6 +23,15 @@
 (test-group "storage"
   (test-assert (make-mem-storage 0)))
 
+(test-group "contours"
+  (test-assert CV_RETR_LIST)
+  (test-assert CV_CHAIN_APPROX_SIMPLE)
+  (let* ((img (load-image "cremate.jpg"))
+         (gray (BGR2GRAY img))
+         (mode CV_RETR_LIST)
+         (method CV_CHAIN_APPROX_SIMPLE))
+    (test-assert (find-contours gray mode method))))
+
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))
   (let ((mat (make-mat-from-buffer "foo")))
