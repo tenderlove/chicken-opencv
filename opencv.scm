@@ -63,6 +63,7 @@
    seq.h_next->list
    seq.total
    contour-area
+   arc-length
 
    ;; highgui
    make-window
@@ -321,8 +322,16 @@ CvSize s = cvGetSize((CvArr*)ptr);
 (define (seq.total seq)
   (_seq->total (unwrap-CvSeq seq)))
 
+(define (arc-length contour)
+  (cvArcLength (unwrap-CvSeq contour) -1))
+
 (define (contour-area contour)
   (cvContourArea (unwrap-CvSeq contour) 0))
+
+(define cvArcLength (foreign-lambda* double
+                                       ((CvArr* contour)
+                                        (int is_closed))
+"C_return(cvArcLength(contour, CV_WHOLE_SEQ, is_closed));"))
 
 (define cvContourArea (foreign-lambda* double
                                        ((CvArr* contour)
