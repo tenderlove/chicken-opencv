@@ -64,6 +64,7 @@
    seq.total
    contour-area
    arc-length
+   approx-poly
 
    ;; highgui
    make-window
@@ -146,6 +147,8 @@
 (define CV_CHAIN_APPROX_NONE (foreign-value "CV_CHAIN_APPROX_NONE" int))
 (define CV_CHAIN_APPROX_TC89_L1 (foreign-value "CV_CHAIN_APPROX_TC89_L1" int))
 (define CV_CHAIN_APPROX_TC89_KCOS (foreign-value "CV_CHAIN_APPROX_TC89_KCOS" int))
+
+(define CV_POLY_APPROX_DP (foreign-value "CV_POLY_APPROX_DP" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
@@ -327,6 +330,24 @@ CvSize s = cvGetSize((CvArr*)ptr);
 
 (define (contour-area contour)
   (cvContourArea (unwrap-CvSeq contour) 0))
+
+(define (approx-poly seq eps recursive)
+  (let ((ptr (unwrap-CvSeq seq))
+        (header-size (foreign-type-size "CvContour"))
+        (storage (make-mem-storage 0))
+        (method CV_POLY_APPROX_DP)
+        (rec (if recursive 1 0)))
+    (let ((ret (cvApproxPoly ptr header-size (unwrap-CvMemStorage storage) method eps rec)))
+      (wrap-CvSeq rec storage))))
+
+(define cvApproxPoly (foreign-lambda CvSeq*
+                                     "cvApproxPoly"
+                                     c-pointer
+                                     int
+                                     CvMemStorage*
+                                     int
+                                     double
+                                     int))
 
 (define cvArcLength (foreign-lambda* double
                                        ((CvArr* contour)

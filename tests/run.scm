@@ -56,7 +56,8 @@
     (test 354 (length (seq.h_next->list contours)))
     (test 1 (seq.total contours))
     (test 0.0 (arc-length contours))
-    (test 0.0 (contour-area contours))))
+    (test 0.0 (contour-area contours))
+    (test-assert (approx-poly contours 10 #t))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))
