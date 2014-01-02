@@ -62,6 +62,7 @@
    seq->h_next
    seq.h_next->list
    seq.total
+   contour-area
 
    ;; highgui
    make-window
@@ -319,6 +320,14 @@ CvSize s = cvGetSize((CvArr*)ptr);
 
 (define (seq.total seq)
   (_seq->total (unwrap-CvSeq seq)))
+
+(define (contour-area contour)
+  (cvContourArea (unwrap-CvSeq contour) 0))
+
+(define cvContourArea (foreign-lambda* double
+                                       ((CvArr* contour)
+                                        (int oriented))
+"C_return(cvContourArea(contour, CV_WHOLE_SEQ, oriented));"))
 
 (define _seq->h_next (foreign-lambda* CvSeq*
                                     ((CvSeq* ptr))
