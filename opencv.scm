@@ -61,6 +61,7 @@
    hole?
    seq->h_next
    seq.h_next->list
+   seq.total
 
    ;; highgui
    make-window
@@ -316,9 +317,16 @@ CvSize s = cvGetSize((CvArr*)ptr);
         (cons s (loop (seq->h_next s)))
         '())))
 
+(define (seq.total seq)
+  (_seq->total (unwrap-CvSeq seq)))
+
 (define _seq->h_next (foreign-lambda* CvSeq*
                                     ((CvSeq* ptr))
                                     "C_return(ptr->h_next);"))
+
+(define _seq->total (foreign-lambda* int
+                                    ((CvSeq* ptr))
+                                    "C_return(ptr->total);"))
 
 (define CV_IS_SEQ_HOLE (foreign-lambda int
                                        "CV_IS_SEQ_HOLE"

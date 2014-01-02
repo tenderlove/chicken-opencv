@@ -53,7 +53,8 @@
          (can (canny gray 100 100 3))
          (contours (find-contours can CV_RETR_TREE CV_CHAIN_APPROX_SIMPLE)))
     (test 354 (length (c->list contours)))
-    (test 354 (length (seq.h_next->list contours)))))
+    (test 354 (length (seq.h_next->list contours)))
+    (test 1 (seq.total contours))))
 
 (test-group "matrix"
   (test-assert (make-mat 10 10 CV_8UC1))
