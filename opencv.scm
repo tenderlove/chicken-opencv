@@ -66,6 +66,7 @@
    arc-length
    approx-poly
    convex-hull
+   seq-ref
 
    ;; highgui
    make-window
@@ -81,6 +82,11 @@
 (import scheme chicken foreign)
 (use lolevel srfi-4 ports)
 
+(define-record-type CvPoint
+  (wrap-CvPoint pointer)
+  CvPoint?
+  (pointer unwrap-CvPoint))
+
 (define-record-type CvMat
   (wrap-CvMat pointer)
   CvMat?
@@ -92,9 +98,10 @@
   (pointer unwrap-CvMemStorage))
 
 (define-record-type CvSeq
-  (wrap-CvSeq pointer storage)
+  (wrap-CvSeq pointer storage type)
   CvSeq?
   (pointer unwrap-CvSeq)
+  (type unwrap-CvSeq-type)
   (storage unwrap-CvSeq-storage))
 
 (foreign-declare "#include <opencv/cv.h>")
@@ -305,17 +312,18 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                   method
                                   0
                                   0)
-                  (wrap-CvSeq first-contour storage))))
+                  (wrap-CvSeq first-contour storage 'CvContour))))
 
 (define (hole? seq)
   (if (= 0 (CV_IS_SEQ_HOLE (unwrap-CvSeq seq))) #f #t))
 
 (define (seq->h_next seq)
   (let ((ptr (unwrap-CvSeq seq))
-        (storage (unwrap-CvSeq-storage seq)))
+        (storage (unwrap-CvSeq-storage seq))
+        (type (unwrap-CvSeq-type seq)))
     (let ((next-ptr (_seq->h_next ptr)))
       (if next-ptr
-          (wrap-CvSeq (_seq->h_next ptr) storage)
+          (wrap-CvSeq (_seq->h_next ptr) storage type)
           #f))))
 
 (define (seq.h_next->list seq)
@@ -340,7 +348,7 @@ CvSize s = cvGetSize((CvArr*)ptr);
         (method CV_POLY_APPROX_DP)
         (rec (if recursive 1 0)))
     (let ((ret (cvApproxPoly ptr header-size (unwrap-CvMemStorage storage) method eps rec)))
-      (wrap-CvSeq ret storage))))
+      (wrap-CvSeq ret storage 'CvContour))))
 
 (define (convex-hull seq)
   (let ((ptr (unwrap-CvSeq seq))
@@ -350,7 +358,12 @@ CvSize s = cvGetSize((CvArr*)ptr);
     (let ((memptr (unwrap-CvMemStorage storage)))
       (wrap-CvSeq
         (cvConvexHull2 ptr memptr orientation return-points)
-        storage))))
+        storage
+        'CvContour))))
+
+(define (seq-ref seq idx)
+  (let ((ptr (unwrap-CvSeq seq)))
+    (wrap-CvPoint (cvGetSeqElem ptr idx))))
 
 (define cvConvexHull2 (foreign-lambda CvSeq*
                                       "cvConvexHull2"
@@ -389,6 +402,11 @@ CvSize s = cvGetSize((CvArr*)ptr);
 (define CV_IS_SEQ_HOLE (foreign-lambda int
                                        "CV_IS_SEQ_HOLE"
                                        CvSeq*))
+
+(define cvGetSeqElem (foreign-lambda c-pointer
+                                     "cvGetSeqElem"
+                                     CvSeq*
+                                     int))
 
 (define cvFindContours (foreign-lambda* int
                                         ((CvArr* img)
