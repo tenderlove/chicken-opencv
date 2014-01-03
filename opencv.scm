@@ -65,6 +65,7 @@
    contour-area
    arc-length
    approx-poly
+   convex-hull
 
    ;; highgui
    make-window
@@ -149,6 +150,7 @@
 (define CV_CHAIN_APPROX_TC89_KCOS (foreign-value "CV_CHAIN_APPROX_TC89_KCOS" int))
 
 (define CV_POLY_APPROX_DP (foreign-value "CV_POLY_APPROX_DP" int))
+(define CV_CLOCKWISE (foreign-value "CV_CLOCKWISE" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
@@ -338,7 +340,24 @@ CvSize s = cvGetSize((CvArr*)ptr);
         (method CV_POLY_APPROX_DP)
         (rec (if recursive 1 0)))
     (let ((ret (cvApproxPoly ptr header-size (unwrap-CvMemStorage storage) method eps rec)))
-      (wrap-CvSeq rec storage))))
+      (wrap-CvSeq ret storage))))
+
+(define (convex-hull seq)
+  (let ((ptr (unwrap-CvSeq seq))
+        (storage (make-mem-storage 0))
+        (orientation CV_CLOCKWISE)
+        (return-points 0))
+    (let ((memptr (unwrap-CvMemStorage storage)))
+      (wrap-CvSeq
+        (cvConvexHull2 ptr memptr orientation return-points)
+        storage))))
+
+(define cvConvexHull2 (foreign-lambda CvSeq*
+                                      "cvConvexHull2"
+                                      CvArr*
+                                      c-pointer
+                                      int
+                                      int))
 
 (define cvApproxPoly (foreign-lambda CvSeq*
                                      "cvApproxPoly"
