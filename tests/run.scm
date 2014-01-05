@@ -48,6 +48,12 @@
     (test-assert (find-contours gray mode method))
     (test #f (hole? (find-contours gray mode method))))
 
+  (let* ((img (load-image "recognizeable.jpg"))
+         (gray (BGR2GRAY img))
+         (can (canny gray 100 100 3))
+         (contours (find-contours can CV_RETR_TREE CV_CHAIN_APPROX_SIMPLE)))
+    (test-assert (draw-contours! img contours green white 10 5)))
+
   (let* ((img (load-image "cremate.jpg"))
          (gray (BGR2GRAY img))
          (can (canny gray 100 100 3))

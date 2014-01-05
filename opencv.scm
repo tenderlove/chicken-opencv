@@ -71,6 +71,7 @@
    cvpoint.y
    seq->list
    draw-point!
+   draw-contours!
    save-image!
 
    red
@@ -482,6 +483,52 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                    (int line_type)
                                    (int shift))
 "cvCircle(img, cvPoint(x, y), radius, cvScalar(c1, c2, c3, c4), thickness, line_type, shift);"))
+
+(define (draw-contours! img contour external-color hole-color thickness max-level)
+  (let ((line-type 8)
+        (offset-x 0)
+        (offset-y 0)
+        (img-ptr (unwrap-IplImage img))
+        (seq-ptr (unwrap-CvSeq contour)))
+    (cvDrawContours img-ptr
+                    seq-ptr
+                    (list-ref external-color 0)
+                    (list-ref external-color 1)
+                    (list-ref external-color 2)
+                    (list-ref external-color 3)
+                    (list-ref hole-color 0)
+                    (list-ref hole-color 1)
+                    (list-ref hole-color 2)
+                    (list-ref hole-color 3)
+                    max-level
+                    thickness
+                    line-type
+                    offset-x
+                    offset-y)))
+
+; cvDrawContours( void* _img, CvSeq* contour,
+;                CvScalar _externalColor, CvScalar _holeColor,
+;                int  maxLevel, int thickness,
+;                int line_type, CvPoint _offset )
+(define cvDrawContours (foreign-lambda* void
+                                  ((CvArr* img)
+                                   (CvSeq* contour)
+                                   (double e1)
+                                   (double e2)
+                                   (double e3)
+                                   (double e4)
+                                   (double h1)
+                                   (double h2)
+                                   (double h3)
+                                   (double h4)
+                                   (int maxLevel)
+                                   (int thickness)
+                                   (int line_type)
+                                   (int x)
+                                   (int y))
+"cvDrawContours(img, contour, cvScalar(e1, e2, e3, e4),
+                              cvScalar(h1, h2, h3, h4),
+                              maxLevel, thickness, line_type, cvPoint(x, y));"))
 
 (define cvFindContours (foreign-lambda* int
                                         ((CvArr* img)
