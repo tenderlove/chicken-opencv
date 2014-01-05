@@ -67,6 +67,8 @@
    approx-poly
    convex-hull
    seq-ref
+   cvpoint.x
+   cvpoint.y
    seq->list
 
    ;; highgui
@@ -163,6 +165,7 @@
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
 (define-foreign-type CvSeq* (c-pointer "CvSeq"))
+(define-foreign-type CvPoint* (c-pointer "CvPoint"))
 (define-foreign-type IplImage* (c-pointer "IplImage"))
 (define-foreign-type CvMemStorage* (c-pointer "CvMemStorage"))
 
@@ -409,6 +412,14 @@ CvSize s = cvGetSize((CvArr*)ptr);
 (define _seq->total (foreign-lambda* int
                                     ((CvSeq* ptr))
                                     "C_return(ptr->total);"))
+
+(define _cvpoint->x (foreign-lambda* int
+                                    ((CvPoint* ptr))
+                                    "C_return(ptr->x);"))
+
+(define _cvpoint->y (foreign-lambda* int
+                                    ((CvPoint* ptr))
+                                    "C_return(ptr->y);"))
 
 (define CV_IS_SEQ_HOLE (foreign-lambda int
                                        "CV_IS_SEQ_HOLE"
