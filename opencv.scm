@@ -70,6 +70,7 @@
    cvpoint.x
    cvpoint.y
    seq->list
+   draw-point!
    save-image!
 
    red
@@ -453,6 +454,34 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                     nonnull-c-string
                                     CvSeq*
                                     (c-pointer int)))
+
+(define (draw-point! img center radius color thickness)
+  (cvCircle (unwrap-IplImage img)
+            (cvpoint.x center)
+            (cvpoint.y center)
+            radius
+            (list-ref color 0) ; blue
+            (list-ref color 1) ; green
+            (list-ref color 2) ; red
+            (list-ref color 3)
+            thickness
+            8
+            0))
+
+; void cvCircle(CvArr* img, CvPoint center, int radius, CvScalar color, int thickness=1, int line_type=8, int shift=0 )
+(define cvCircle (foreign-lambda* void
+                                  ((CvArr* img)
+                                   (int x)
+                                   (int y)
+                                   (int radius)
+                                   (double c1)
+                                   (double c2)
+                                   (double c3)
+                                   (double c4)
+                                   (int thickness)
+                                   (int line_type)
+                                   (int shift))
+"cvCircle(img, cvPoint(x, y), radius, cvScalar(c1, c2, c3, c4), thickness, line_type, shift);"))
 
 (define cvFindContours (foreign-lambda* int
                                         ((CvArr* img)
