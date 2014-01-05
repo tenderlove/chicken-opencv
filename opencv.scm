@@ -72,6 +72,12 @@
    seq->list
    save-image!
 
+   red
+   green
+   blue
+   white
+   black
+
    ;; highgui
    make-window
    load-image
@@ -107,6 +113,12 @@
   (pointer unwrap-CvSeq)
   (type unwrap-CvSeq-type)
   (storage unwrap-CvSeq-storage))
+
+(define red '(0 0 128 0))
+(define green '(0 128 0 0))
+(define blue '(128 0 0 0))
+(define white '(255 255 255 0))
+(define black '(0 0 0 0))
 
 (foreign-declare "#include <opencv/cv.h>")
 (foreign-declare "#include <opencv/highgui.h>")
