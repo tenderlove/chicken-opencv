@@ -54,6 +54,7 @@
          (contours (find-contours can CV_RETR_TREE CV_CHAIN_APPROX_SIMPLE))
          (poly (approx-poly contours 10 #t))
          (hull (convex-hull poly)))
+    (test-asert (save-image! img (create-temporary-file)))
     (test 354 (length (c->list contours)))
     (test 354 (length (seq.h_next->list contours)))
     (test 1 (seq.total contours))

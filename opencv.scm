@@ -70,6 +70,7 @@
    cvpoint.x
    cvpoint.y
    seq->list
+   save-image!
 
    ;; highgui
    make-window
@@ -429,6 +430,16 @@ CvSize s = cvGetSize((CvArr*)ptr);
                                      "cvGetSeqElem"
                                      CvSeq*
                                      int))
+
+(define (save-image! img filename)
+  (let-location ((i int 95))
+                (cvSaveImage filename (unwrap-IplImage img) (location i))))
+
+(define cvSaveImage (foreign-lambda int
+                                    "cvSaveImage"
+                                    nonnull-c-string
+                                    CvSeq*
+                                    (c-pointer int)))
 
 (define cvFindContours (foreign-lambda* int
                                         ((CvArr* img)
