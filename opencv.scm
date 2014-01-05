@@ -162,6 +162,7 @@
 
 (define CV_POLY_APPROX_DP (foreign-value "CV_POLY_APPROX_DP" int))
 (define CV_CLOCKWISE (foreign-value "CV_CLOCKWISE" int))
+(define CV_COUNTER_CLOCKWISE (foreign-value "CV_COUNTER_CLOCKWISE" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
