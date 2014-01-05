@@ -67,6 +67,7 @@
    approx-poly
    convex-hull
    seq-ref
+   seq->list
 
    ;; highgui
    make-window
@@ -354,7 +355,7 @@ CvSize s = cvGetSize((CvArr*)ptr);
   (let ((ptr (unwrap-CvSeq seq))
         (storage (make-mem-storage 0))
         (orientation CV_CLOCKWISE)
-        (return-points 0))
+        (return-points 1)) ; 0 = indices 1 = point objects
     (let ((memptr (unwrap-CvMemStorage storage)))
       (wrap-CvSeq
         (cvConvexHull2 ptr memptr orientation return-points)
@@ -364,6 +365,16 @@ CvSize s = cvGetSize((CvArr*)ptr);
 (define (seq-ref seq idx)
   (let ((ptr (unwrap-CvSeq seq)))
     (wrap-CvPoint (cvGetSeqElem ptr idx))))
+
+(define (seq->list seq)
+  (let loop ((i (seq.total seq))
+             (seed '()))
+    (if (= i 0)
+        seed
+        (loop (- i 1) (cons (seq-ref seq (- i 1)) seed)))))
+
+(define (cvpoint.x point) (_cvpoint->x (unwrap-CvPoint point)))
+(define (cvpoint.y point) (_cvpoint->y (unwrap-CvPoint point)))
 
 (define cvConvexHull2 (foreign-lambda CvSeq*
                                       "cvConvexHull2"
