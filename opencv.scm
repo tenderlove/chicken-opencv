@@ -73,6 +73,7 @@
    draw-point!
    draw-contours!
    save-image!
+   get-perspective-transform
 
    red
    green
@@ -89,15 +90,24 @@
    destroy-window-named
    destroy-all-windows
    unwrap-IplImage
+   make-point
+   point-x
+   point-y
   )
 
 (import scheme chicken foreign)
-(use lolevel srfi-4 ports)
+(use lolevel srfi-1 srfi-4 ports)
 
 (define-record-type CvPoint
   (wrap-CvPoint pointer)
   CvPoint?
   (pointer unwrap-CvPoint))
+
+(define-record-type Point
+  (make-point x y)
+  Point?
+  (x point-x)
+  (y point-y))
 
 (define-record-type CvMat
   (wrap-CvMat pointer)
@@ -162,6 +172,8 @@
 (define CV_64FC3 (foreign-value "CV_64FC3" int))
 (define CV_64FC4 (foreign-value "CV_64FC4" int))
 
+(define CV_32FC1 (foreign-value "CV_32FC1" int))
+
 (define CV_BGR2GRAY (foreign-value "CV_BGR2GRAY" int))
 
 (define CV_RETR_LIST (foreign-value "CV_RETR_LIST" int))
@@ -184,6 +196,7 @@
 (define-foreign-type CvPoint* (c-pointer "CvPoint"))
 (define-foreign-type IplImage* (c-pointer "IplImage"))
 (define-foreign-type CvMemStorage* (c-pointer "CvMemStorage"))
+(define-foreign-type CvPoint2D32f* (c-pointer "CvPoint2D32f"))
 
 (define (make-mat rows cols type)
   (let ((ptr (cvCreateMat rows cols type)))
@@ -554,6 +567,68 @@ C_return(cvFindContours(img, storage, first_contour, header_size, mode, method,
                                            "cvCreateMemStorage"
                                            int))
 
+(define (get-point-x point)
+  (if (Point? point)
+      (point-x point)
+      (cvpoint.x point)))
+
+(define (get-point-y point)
+  (if (Point? point)
+      (point-y point)
+      (cvpoint.y point)))
+
+(define sizeof-CvPoint2D32f (foreign-type-size "CvPoint2D32f"))
+
+(define (mem->list memory nelms size)
+  (let loop ((n nelms)
+             (mem memory))
+    (if (= n 0)
+        '()
+        (cons mem (loop (- n 1)
+                        (pointer+ mem size))))))
+
+(define (copy-points-into memlist elems)
+  (let* ((pairs (zip elems memlist)))
+    (for-each (lambda (pair)
+                (let ((to (cadr pair))
+                      (from (car pair)))
+                  (cvPoint2D32f.x= to (get-point-x from))
+                  (cvPoint2D32f.y= to (get-point-y from))))
+              pairs)))
+
+(define (get-perspective-transform from to)
+  (let ((from-mem (allocate (* 4 sizeof-CvPoint2D32f)))
+        (to-mem (allocate (* 4 sizeof-CvPoint2D32f)))
+        (len (length from)))
+    (copy-points-into (mem->list from-mem len sizeof-CvPoint2D32f) from)
+    (copy-points-into (mem->list to-mem len sizeof-CvPoint2D32f) to)
+    (let ((matrix (make-mat 3 3 CV_32FC1)))
+      (cvGetPerspectiveTransform from-mem to-mem (unwrap-CvMat matrix))
+      matrix)))
+
+(define cvPoint2D32f.x (foreign-lambda* float
+                                        ((CvPoint2D32f* point))
+"C_return(point->x);"))
+
+(define cvPoint2D32f.y (foreign-lambda* float
+                                        ((CvPoint2D32f* point))
+"C_return(point->y);"))
+
+(define cvPoint2D32f.x= (foreign-lambda* void
+                                         ((CvPoint2D32f* point)
+                                          (int x))
+"point->x = (float)x;"))
+
+(define cvPoint2D32f.y= (foreign-lambda* void
+                                         ((CvPoint2D32f* point)
+                                          (int y))
+"point->y = (float)y;"))
+
+(define cvGetPerspectiveTransform (foreign-lambda CvMat*
+                                                  "cvGetPerspectiveTransform"
+                                                  CvPoint2D32f*
+                                                  CvPoint2D32f*
+                                                  CvMat*))
 ;;; highgui
 
 (define-record-type IplImage
