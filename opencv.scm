@@ -608,6 +608,8 @@ C_return(cvFindContours(img, storage, first_contour, header_size, mode, method,
     (copy-points-into (mem->list to-mem len sizeof-CvPoint2D32f) to)
     (let ((matrix (make-mat 3 3 CV_32FC1)))
       (cvGetPerspectiveTransform from-mem to-mem (unwrap-CvMat matrix))
+      (free from-mem)
+      (free to-mem)
       matrix)))
 
 (define (warp-perspective img matrix)
