@@ -75,6 +75,7 @@
    save-image!
    get-perspective-transform
    warp-perspective
+   set-roi!
 
    red
    green
@@ -260,6 +261,18 @@
     (cvCanny ptr dest-img threshold1 threshold2 apeture-size)
     (set-finalizer! dest-img release-image)
     (wrap-IplImage dest-img)))
+
+(define (set-roi! image x y width height)
+  (cvSetImageROI (unwrap-IplImage image) x y width height))
+
+; void cvSetImageROI(IplImage* image, CvRect rect)
+(define cvSetImageROI (foreign-lambda* void
+                                    ((IplImage* ptr)
+                                     (int x)
+                                     (int y)
+                                     (int height)
+                                     (int width))
+"cvSetImageROI(ptr, cvRect(x, y, height, width));"))
 
 (define cvCanny (foreign-lambda void
                                 "cvCanny"
