@@ -74,6 +74,7 @@
    draw-contours!
    save-image!
    get-perspective-transform
+   warp-perspective
 
    red
    green
@@ -189,6 +190,9 @@
 (define CV_POLY_APPROX_DP (foreign-value "CV_POLY_APPROX_DP" int))
 (define CV_CLOCKWISE (foreign-value "CV_CLOCKWISE" int))
 (define CV_COUNTER_CLOCKWISE (foreign-value "CV_COUNTER_CLOCKWISE" int))
+
+(define CV_INTER_LINEAR (foreign-value "CV_INTER_LINEAR" int))
+(define CV_WARP_FILL_OUTLIERS (foreign-value "CV_WARP_FILL_OUTLIERS" int))
 
 (define-foreign-type CvArr* (c-pointer "CvArr"))
 (define-foreign-type CvMat* (c-pointer "CvMat"))
@@ -605,6 +609,28 @@ C_return(cvFindContours(img, storage, first_contour, header_size, mode, method,
     (let ((matrix (make-mat 3 3 CV_32FC1)))
       (cvGetPerspectiveTransform from-mem to-mem (unwrap-CvMat matrix))
       matrix)))
+
+(define (warp-perspective img matrix)
+  (let* ((ptr (unwrap-IplImage img))
+         (size (get-size img))
+         (depth (img->depth ptr))
+         (channels (img->nChannels ptr))
+         (flags (bitwise-ior CV_INTER_LINEAR CV_WARP_FILL_OUTLIERS))
+         (dest-ptr (cvCreateImage (car size) (cadr size) depth channels)))
+    (cvWarpPerspective ptr dest-ptr (unwrap-CvMat matrix) flags 0)
+    (set-finalizer! dest-ptr release-image)
+    (wrap-IplImage dest-ptr)))
+
+; CV_IMPL void
+; cvWarpPerspective( const CvArr* srcarr, CvArr* dstarr, const CvMat* marr,
+;                    int flags, CvScalar fillval )
+(define cvWarpPerspective (foreign-lambda* void
+                                           ((IplImage* src_img)
+                                            (IplImage* dst_img)
+                                            (CvMat* marr)
+                                            (int flags)
+                                            (int fillval))
+"cvWarpPerspective(src_img, dst_img, marr, flags, cvScalarAll(fillval));"))
 
 (define cvPoint2D32f.x (foreign-lambda* float
                                         ((CvPoint2D32f* point))
